@@ -1787,7 +1787,8 @@ static WDL_DLGRET liceCapMainProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
       }
     break;
-
+#ifndef _WIN32
+    // win32 uses WM_NCHITTEST
     case WM_LBUTTONDOWN:
       SetCapture(hwndDlg);
       GetCursorPos(&s_last_mouse);
@@ -1811,7 +1812,7 @@ static WDL_DLGRET liceCapMainProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
     case WM_LBUTTONUP:
       ReleaseCapture();
     break;
-
+#endif
     case WM_MOVE:
       //g_skip_capture_until = timeGetTime()+30;
     break;
@@ -1824,8 +1825,8 @@ static WDL_DLGRET liceCapMainProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
        
 
 #ifdef _WIN32
-				RECT r,r2;
-				GetWindowRect(hwndDlg,&r);
+        RECT r,r2;
+        GetWindowRect(hwndDlg,&r);
         GetWindowRect(GetDlgItem(hwndDlg,IDC_VIEWRECT),&r2);
 
         r.right-=r.left;
@@ -1846,16 +1847,32 @@ static WDL_DLGRET liceCapMainProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
         HRGN rgn3=CreateRectRgn(0,0,0,0);
         CombineRgn(rgn3,rgn,rgn2,RGN_DIFF);
 
-			  DeleteObject(rgn);
-		    DeleteObject(rgn2);
+        DeleteObject(rgn);
+        DeleteObject(rgn2);
         SetWindowRgn(hwndDlg,rgn3,TRUE);
 #endif
         UpdateDimBoxes(hwndDlg);
 
         InvalidateRect(hwndDlg,NULL,TRUE);
-        
+
       }
     break;
+#if _WIN32
+    case WM_NCHITTEST: /* allow dragging the dialog without mouse capture */
+        {
+            POINT pt;
+            RECT rc;
+            GetCursorPos(&pt);
+            GetClientRect(hwndDlg, &rc);
+            ScreenToClient(hwndDlg, &pt);
+            if (PtInRect(&rc, pt))
+            {
+                SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, HTCAPTION);
+                return 1;
+            }
+        }
+        break;
+#endif
   }
   return 0;
 }
