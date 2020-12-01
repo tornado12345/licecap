@@ -7,12 +7,8 @@
 *.m      text=auto
 *.mm     text=auto
 
-*.eel    text=auto
 *.php    text=auto
 *.txt    text=auto
-
-*.bat    text eol=crlf
-*.cmd    text eol=crlf
 
 *.rc                text eol=crlf
 *.dsp               text eol=crlf
